@@ -43,9 +43,6 @@ function Progression({ articles, setResults }) {
     };
 
     const bidirectionalBFS = async (start, finish) => {
-        start = start.replace(" ", "_");
-        finish = finish.replace(" ", "_");
-
         const startQueue = [{ article: start, path: [start] }];
         const finishQueue = [{ article: finish, path: [finish] }];
 
