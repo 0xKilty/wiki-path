@@ -1,18 +1,16 @@
 import React, { useState } from "react";
-import { InputGroup, Input, Button, Row, Col } from "reactstrap";
+import { Button, Row, Col } from "reactstrap";
 import { IoShuffle, IoSearch } from "react-icons/io5";
 import { HiOutlineSwitchHorizontal } from "react-icons/hi";
+import { Autocomplete, TextField } from "@mui/material";
 
 function ArticleInput({ setArticles, setResults }) {
     const [startingArticle, setStartingArticle] = useState("");
     const [finishingArticle, setFinishingArticle] = useState("");
 
-    const handleInputChange = (event, setter) => {
-        setter(event.target.value);
-    };
-
     const handleRandom = async (setter) => {
-        const randomUrl = "https://en.wikipedia.org/w/api.php?action=query&list=random&rnlimit=1&rnnamespace=0&format=json&origin=*";
+        const randomUrl =
+            "https://en.wikipedia.org/w/api.php?action=query&list=random&rnlimit=1&rnnamespace=0&format=json&origin=*";
         try {
             const response = await fetch(randomUrl);
             const jsonData = await response.json();
@@ -34,10 +32,10 @@ function ArticleInput({ setArticles, setResults }) {
     const handleGo = () => {
         setArticles({
             start: startingArticle,
-            finish: finishingArticle
-        })
-        setResults([])
-    }
+            finish: finishingArticle,
+        });
+        setResults([]);
+    };
 
     return (
         <>
@@ -45,17 +43,20 @@ function ArticleInput({ setArticles, setResults }) {
                 <Col md={5}>
                     <ArticleSelector
                         articleTitle={startingArticle}
-                        handleInputChange={(event) => handleInputChange(event, setStartingArticle)}
+                        setArticleTitle={setStartingArticle}
                         handleRandom={() => handleRandom(setStartingArticle)}
                     />
                 </Col>
-                <Col md={2}>
+                <Col
+                    md={2}
+                    className="d-flex align-items-center justify-content-center"
+                >
                     <SwitchButton handleSwitch={handleSwitch} />
                 </Col>
                 <Col md={5}>
                     <ArticleSelector
                         articleTitle={finishingArticle}
-                        handleInputChange={(event) => handleInputChange(event, setFinishingArticle)}
+                        setArticleTitle={setFinishingArticle}
                         handleRandom={() => handleRandom(setFinishingArticle)}
                     />
                 </Col>
@@ -69,18 +70,44 @@ function ArticleInput({ setArticles, setResults }) {
     );
 }
 
-function ArticleSelector({ articleTitle, handleInputChange, handleRandom }) {
+function ArticleSelector({ articleTitle, setArticleTitle, handleRandom }) {
+    const [suggestions, setSuggestions] = useState([]);
+
+    const fetchSuggestions = async (value) => {
+        if (value.length < 3) return [];
+        const response = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${value}`
+        );
+        const data = await response.json();
+        return data[1];
+    };
+
+    const handleInputChange = async (event, value) => {
+        setArticleTitle(value);
+        const results = await fetchSuggestions(value);
+        setSuggestions(results);
+    };
+
     return (
-        <InputGroup>
-            <Input
-                placeholder="Enter article title..."
-                value={articleTitle}
-                onChange={handleInputChange}
+        <div style={{ display: "flex", alignItems: "center" }}>
+            <Autocomplete
+                options={suggestions}
+                freeSolo
+                inputValue={articleTitle}
+                onInputChange={handleInputChange}
+                renderInput={(params) => <TextInput params={params} />}
+                style={{ flexGrow: 1 }}
             />
-            <Button onClick={handleRandom}>
+            <Button onClick={handleRandom} style={{ marginLeft: "8px" }}>
                 <IoShuffle size={30} />
             </Button>
-        </InputGroup>
+        </div>
+    );
+}
+
+function TextInput({ params }) {
+    return (
+        <TextField {...params} label="Enter article title" variant="outlined" />
     );
 }
 

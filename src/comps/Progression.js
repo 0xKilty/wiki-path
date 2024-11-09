@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Row, Col, Fade, Alert } from "reactstrap";
+import { Table, Row, Col, Fade } from "reactstrap";
 
 function Progression({ articles, setResults }) {
     const [fadeIn, setFadeIn] = useState(false);
